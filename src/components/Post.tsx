@@ -1,22 +1,24 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
-import type { Post, Comment } from '../types';
+import type { Post } from '../types';
 
 interface PostProps {
   post: Post;
   onLike: (id: string) => void;
+  onSave: (id: string) => void;
+  onShare: (id: string) => void;
+  onDelete: (id: string) => void;
   onComment: (id: string, comment: string) => void;
 }
 
-const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
+const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete, onComment }) => {
   const [comment, setComment] = React.useState('');
 
   const handleComment = () => {
-    if (comment.trim()) {
-      onComment(post.id, comment);
-      setComment('');
-    }
+    if (!comment.trim()) return;
+    onComment(post.id, comment);
+    setComment('');
   };
 
   return (
@@ -40,7 +42,16 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                   @{post.handle} · {post.timeAgo} · {post.location} · {post.distance}
                 </p>
               </div>
-              <button className="text-xl leading-none text-[var(--muted)]">⋯</button>
+              {post.isMine ? (
+                <button
+                  onClick={() => onDelete(post.id)}
+                  className="rounded-full border border-[rgba(33,35,38,0.08)] px-3 py-1 text-xs font-semibold text-[var(--muted)] transition hover:border-[rgba(220,38,38,0.3)] hover:text-[rgb(220,38,38)]"
+                >
+                  삭제
+                </button>
+              ) : (
+                <button className="text-xl leading-none text-[var(--muted)]">?</button>
+              )}
             </div>
 
             <p className="mt-4 text-[15px] leading-7 text-[var(--ink)]">{post.content}</p>
@@ -78,16 +89,36 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
 
       <div className="p-5">
         <div className="flex items-center justify-between gap-3 border-b border-[rgba(33,35,38,0.07)] pb-4">
-          <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
             <button
               onClick={() => onLike(post.id)}
-              className="rounded-full bg-[rgba(45,168,93,0.12)] px-4 py-2 font-semibold text-[var(--brand-deep)] transition hover:bg-[rgba(45,168,93,0.18)]"
+              className={`rounded-full px-4 py-2 font-semibold transition ${
+                post.isLiked
+                  ? 'bg-[var(--brand)] text-white'
+                  : 'bg-[rgba(45,168,93,0.12)] text-[var(--brand-deep)] hover:bg-[rgba(45,168,93,0.18)]'
+              }`}
             >
               좋아요 {post.likes}
             </button>
+            <button
+              onClick={() => onSave(post.id)}
+              className={`rounded-full px-4 py-2 font-semibold transition ${
+                post.isSaved
+                  ? 'bg-[var(--ink)] text-white'
+                  : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[rgba(32,34,37,0.08)]'
+              }`}
+            >
+              저장 {post.saves}
+            </button>
+            <button
+              onClick={() => onShare(post.id)}
+              className="rounded-full bg-[var(--surface-muted)] px-4 py-2 font-semibold text-[var(--muted)] transition hover:bg-[rgba(32,34,37,0.08)]"
+            >
+              공유 {post.shares}
+            </button>
             <span>댓글 {post.comments.length}</span>
           </div>
-          <div className="text-sm text-[var(--muted)]">공유 {post.shares}</div>
+          <div className="text-sm text-[var(--muted)]">{post.createdAt.slice(0, 10)}</div>
         </div>
 
         <div className="mt-4 flex items-center gap-2">
@@ -107,20 +138,20 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
         </div>
 
         <div className="mt-4 space-y-3">
-          {post.comments.map((c) => (
-            <div key={c.id} className="flex gap-3 rounded-[22px] bg-[var(--surface-muted)] px-4 py-3">
+          {post.comments.map((commentItem) => (
+            <div key={commentItem.id} className="flex gap-3 rounded-[22px] bg-[var(--surface-muted)] px-4 py-3">
               <div
                 className="avatar-ring h-10 w-10 shrink-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${c.avatar})` }}
+                style={{ backgroundImage: `url(${commentItem.avatar})` }}
               />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">
-                  {c.author}
+                  {commentItem.author}
                   <span className="ml-2 text-xs font-normal text-[var(--muted)]">
-                    @{c.handle} · {c.timeAgo}
+                    @{commentItem.handle} · {commentItem.timeAgo}
                   </span>
                 </p>
-                <p className="mt-1 text-sm leading-6 text-[var(--ink)]">{c.content}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--ink)]">{commentItem.content}</p>
               </div>
             </div>
           ))}
@@ -130,4 +161,5 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
   );
 };
 
-export default Post;
+export default PostCard;
+

@@ -1,43 +1,49 @@
-"use client";
+﻿"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Login from '../components/Login';
 import Feed from '../components/Feed';
-import { Post, Comment } from '../types';
+import { Comment, Post } from '../types';
 
 const starterPosts: Post[] = [
   {
     id: 'seed-1',
     author: '수지',
     handle: 'suji.seongsu',
-    content: '오픈하자마자 들어간 성수 골목 카페. 화이트 톤 인테리어에 초록 포인트가 너무 깔끔해서 사진이 바로 살아나요. 라떼 밸런스도 좋고 작업하기에 음악 볼륨도 적당했습니다.',
+    content:
+      '오픈하자마자 들른 성수 골목 카페. 화이트 인테리어에 그린 포인트가 깔끔해서 사진이 정말 잘 나와요. 음악 볼륨과 좌석 간격도 좋아서 작업하기 편했습니다.',
     location: '성수동 연무장길',
     category: 'CAFE',
     image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1200&q=80',
     mood: 'Quiet Morning',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
     timeAgo: '12분 전',
+    createdAt: '2026-04-16T09:12:00.000Z',
     distance: '420m',
     saves: 88,
     likes: 124,
     shares: 19,
     tags: ['성수카페', '작업공간', '화이트무드'],
+    isSaved: false,
+    isLiked: false,
     comments: [
       {
         id: 'seed-1-comment-1',
         author: '민호',
         handle: 'runwithmin',
-        content: '채광 좋으면 오전 러닝 끝나고 들르기 딱 좋겠네요. 콘센트 자리도 많은 편인가요?',
+        content: '채광이 좋다면 오전 러닝 끝나고 들르기 좋겠네요. 콘센트 좌석도 많은 편인가요?',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
         timeAgo: '5분 전',
+        createdAt: '2026-04-16T09:18:00.000Z',
       },
       {
         id: 'seed-1-comment-2',
         author: '혜린',
         handle: 'hyer_in',
-        content: '이번 주말에 가보려고 저장했어요. 디저트도 맛있다면 완전 취향일 듯!',
+        content: '이번 주말에 가보려고 저장했어요. 디저트까지 맛있으면 완전 취향일 것 같아요.',
         avatar: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=300&q=80',
         timeAgo: '방금',
+        createdAt: '2026-04-16T09:22:00.000Z',
       },
     ],
   },
@@ -45,26 +51,31 @@ const starterPosts: Post[] = [
     id: 'seed-2',
     author: '도윤',
     handle: 'doyoon.local',
-    content: '연남 작은 갤러리에서 반려동물 포토 전시 시작했어요. 무료 입장이고 동네 산책 루트에 넣기 좋아서 공유합니다. 사진 톤이 부드러워서 부모님과 같이 보기에도 좋았습니다.',
+    content:
+      '연남 작은 갤러리에서 반려동물 포토 전시가 시작됐어요. 무료 입장이고 동네 산책 루트에 넣기 좋아서 공유합니다. 사진 톤이 부드럽고 공간도 편안했어요.',
     location: '연남동 동진시장 근처',
     category: 'EXHIBIT',
     image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80',
     mood: 'Soft Weekend',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
     timeAgo: '34분 전',
+    createdAt: '2026-04-16T08:50:00.000Z',
     distance: '1.2km',
     saves: 51,
     likes: 96,
     shares: 12,
     tags: ['전시추천', '연남산책', '반려생활'],
+    isSaved: true,
+    isLiked: false,
     comments: [
       {
         id: 'seed-2-comment-1',
         author: '가은',
         handle: 'gaeun.zip',
-        content: '사진 전시 후에 들를 만한 브런치 집도 있나요? 동선 좋으면 친구랑 가보려구요.',
+        content: '전시 보고 나서 같이 갈 브런치 집도 있나요? 동선 좋으면 친구랑 가보려구요.',
         avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=300&q=80',
         timeAgo: '18분 전',
+        createdAt: '2026-04-16T09:04:00.000Z',
       },
     ],
   },
@@ -72,18 +83,22 @@ const starterPosts: Post[] = [
     id: 'seed-3',
     author: '지후',
     handle: 'jihu.now',
-    content: '한남동 팝업 스토어 대기줄이 생각보다 빨리 빠졌어요. 굿즈보다도 공간 연출이 좋아서 사진 찍기 좋은 포인트가 많았습니다. 저녁 시간대 방문 추천!',
+    content:
+      '한남동 팝업 스토어 대기줄이 생각보다 빨리 빠졌어요. 굿즈보다 공간 연출이 더 좋아서 사진 찍기 좋은 포인트가 많았습니다. 저녁 시간대 방문 추천!',
     location: '한남동 메인 스트리트',
     category: 'POP-UP',
     image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80',
     mood: 'Golden Hour',
     avatar: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=300&q=80',
     timeAgo: '1시간 전',
+    createdAt: '2026-04-16T08:20:00.000Z',
     distance: '2.3km',
     saves: 73,
     likes: 143,
     shares: 27,
     tags: ['팝업', '한남데이트', '포토스팟'],
+    isSaved: false,
+    isLiked: true,
     comments: [
       {
         id: 'seed-3-comment-1',
@@ -92,10 +107,39 @@ const starterPosts: Post[] = [
         content: '이번 주까지면 퇴근하고 바로 가봐야겠네요. 굿즈 구매 제한도 있었나요?',
         avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
         timeAgo: '43분 전',
+        createdAt: '2026-04-16T08:39:00.000Z',
       },
     ],
   },
 ];
+
+const fallbackImage =
+  'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80';
+
+function getTimeAgo(dateString: string) {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.max(1, Math.floor(diffMs / 60000));
+
+  if (minutes < 60) return `${minutes}분 전`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}일 전`;
+}
+
+function hydratePosts(posts: Post[], currentUser?: string | null) {
+  return posts.map((post) => ({
+    ...post,
+    timeAgo: getTimeAgo(post.createdAt),
+    isMine: currentUser ? post.author === currentUser : false,
+    comments: post.comments.map((comment) => ({
+      ...comment,
+      timeAgo: getTimeAgo(comment.createdAt),
+    })),
+  }));
+}
 
 export default function Home() {
   const [user, setUser] = useState<string | null>(null);
@@ -104,7 +148,9 @@ export default function Home() {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedPosts = localStorage.getItem('posts');
+
     if (savedUser) setUser(savedUser);
+
     if (savedPosts) {
       setPosts(JSON.parse(savedPosts));
       return;
@@ -114,46 +160,104 @@ export default function Home() {
     localStorage.setItem('posts', JSON.stringify(starterPosts));
   }, []);
 
+  useEffect(() => {
+    if (posts.length > 0) {
+      localStorage.setItem('posts', JSON.stringify(posts));
+    }
+  }, [posts]);
+
   const handleLogin = (username: string) => {
     setUser(username);
     localStorage.setItem('user', username);
   };
 
-  const handlePost = (content: string) => {
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
+  const handleResetDemo = () => {
+    setPosts(starterPosts);
+    localStorage.setItem('posts', JSON.stringify(starterPosts));
+  };
+
+  const handlePost = (payload: {
+    content: string;
+    location: string;
+    category: string;
+    mood: string;
+    tags: string[];
+    image: string;
+  }) => {
     if (!user) return;
+
+    const createdAt = new Date().toISOString();
     const newPost: Post = {
       id: Date.now().toString(),
       author: user,
       handle: user.toLowerCase().replace(/\s+/g, ''),
-      content,
-      location: '내 주변 1km',
-      category: 'UPDATE',
-      image: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
-      mood: 'Fresh Update',
+      content: payload.content,
+      location: payload.location,
+      category: payload.category,
+      image: payload.image || fallbackImage,
+      mood: payload.mood,
       avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80',
       timeAgo: '방금',
-      distance: '근처 공개',
+      createdAt,
+      distance: '내 주변 1km',
       saves: 0,
       likes: 0,
       shares: 0,
-      tags: ['새포스트', '동네기록'],
+      tags: payload.tags.length ? payload.tags : ['동네기록'],
       comments: [],
+      isSaved: false,
+      isLiked: false,
+      isMine: true,
     };
-    const newPosts = [newPost, ...posts];
-    setPosts(newPosts);
-    localStorage.setItem('posts', JSON.stringify(newPosts));
+
+    setPosts((currentPosts) => [newPost, ...currentPosts]);
   };
 
   const handleLike = (id: string) => {
-    const newPosts = posts.map((post) =>
-      post.id === id ? { ...post, likes: post.likes + 1 } : post
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === id
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? Math.max(0, post.likes - 1) : post.likes + 1,
+            }
+          : post
+      )
     );
-    setPosts(newPosts);
-    localStorage.setItem('posts', JSON.stringify(newPosts));
+  };
+
+  const handleSave = (id: string) => {
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === id
+          ? {
+              ...post,
+              isSaved: !post.isSaved,
+              saves: post.isSaved ? Math.max(0, post.saves - 1) : post.saves + 1,
+            }
+          : post
+      )
+    );
+  };
+
+  const handleShare = (id: string) => {
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === id ? { ...post, shares: post.shares + 1 } : post
+      )
+    );
   };
 
   const handleComment = (id: string, comment: string) => {
     if (!user) return;
+
+    const createdAt = new Date().toISOString();
     const newComment: Comment = {
       id: Date.now().toString(),
       author: user,
@@ -161,17 +265,25 @@ export default function Home() {
       content: comment,
       avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80',
       timeAgo: '방금',
+      createdAt,
     };
-    const newPosts = posts.map((post) =>
-      post.id === id ? { ...post, comments: [...post.comments, newComment] } : post
+
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === id ? { ...post, comments: [...post.comments, newComment] } : post
+      )
     );
-    setPosts(newPosts);
-    localStorage.setItem('posts', JSON.stringify(newPosts));
+  };
+
+  const handleDelete = (id: string) => {
+    setPosts((currentPosts) => currentPosts.filter((post) => post.id !== id));
   };
 
   if (!user) {
     return <Login onLogin={handleLogin} />;
   }
+
+  const hydratedPosts = hydratePosts(posts, user);
 
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
@@ -182,7 +294,7 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--brand)]">NearU Social</p>
               <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">동네 기반 SNS MVP 대시보드</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">
-                첨부 시안의 화이트/그린 무드, 모바일 앱 중심 레이아웃, 카드형 탐색 경험을 반영한 실전형 프로토타입입니다.
+                시안의 화이트/그린 무드와 모바일 중심 피드 경험을 유지하면서, 로컬 저장 기반으로 실제 기능을 모두 체험할 수 있게 구성한 SNS MVP입니다.
               </p>
             </div>
 
@@ -193,18 +305,30 @@ export default function Home() {
               </div>
               <div className="rounded-[24px] bg-[var(--surface-muted)] px-4 py-4 text-center">
                 <p className="text-xs text-[var(--muted)]">오늘 포스트</p>
-                <p className="mt-2 text-xl font-semibold">{posts.length}</p>
+                <p className="mt-2 text-xl font-semibold">{hydratedPosts.length}</p>
               </div>
               <div className="rounded-[24px] bg-[var(--surface-muted)] px-4 py-4 text-center">
-                <p className="text-xs text-[var(--muted)]">전환율 가정</p>
+                <p className="text-xs text-[var(--muted)]">참여 전환율</p>
                 <p className="mt-2 text-xl font-semibold">7.4%</p>
               </div>
             </div>
           </div>
         </header>
 
-        <Feed user={user} posts={posts} onPost={handlePost} onLike={handleLike} onComment={handleComment} />
+        <Feed
+          user={user}
+          posts={hydratedPosts}
+          onPost={handlePost}
+          onLike={handleLike}
+          onSave={handleSave}
+          onShare={handleShare}
+          onDelete={handleDelete}
+          onComment={handleComment}
+          onLogout={handleLogout}
+          onResetDemo={handleResetDemo}
+        />
       </div>
     </main>
   );
 }
+
