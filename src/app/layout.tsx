@@ -1,12 +1,20 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { DM_Sans, Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-display',
+})
+
+const notoSansKr = Noto_Sans_KR({
+  subsets: ['latin'],
+  variable: '--font-body',
+})
 
 export const metadata: Metadata = {
-  title: 'SNS MVP',
-  description: 'Minimum Viable Product for SNS Platform',
+  title: 'NearU Social',
+  description: 'Hyperlocal social networking MVP with a production-ready mobile UI concept.',
 }
 
 export default function RootLayout({
@@ -15,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="ko">
+      <body className={`${dmSans.variable} ${notoSansKr.variable}`}>{children}</body>
     </html>
   )
 }

@@ -20,32 +20,113 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow mb-4">
-      <h3 className="font-bold">{post.author}</h3>
-      <p className="mt-2">{post.content}</p>
-      <div className="mt-4 flex items-center">
-        <button onClick={() => onLike(post.id)} className="text-blue-500 mr-4">
-          Like ({post.likes})
-        </button>
-        <input
-          type="text"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Add a comment"
-          className="flex-1 p-2 border rounded"
-        />
-        <button onClick={handleComment} className="ml-2 bg-blue-500 text-white px-4 py-2 rounded">
-          Comment
-        </button>
-      </div>
-      <div className="mt-2">
-        {post.comments.map((c) => (
-          <div key={c.id} className="text-sm text-gray-600">
-            <strong>{c.author}:</strong> {c.content}
+    <article className="panel overflow-hidden rounded-[32px] shadow-[0_24px_60px_rgba(31,41,55,0.08)]">
+      <div className="p-5">
+        <div className="flex items-start gap-3">
+          <div
+            className="avatar-ring h-12 w-12 shrink-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${post.avatar})` }}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold">{post.author}</h3>
+                  <span className="rounded-full bg-[rgba(45,168,93,0.12)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-deep)]">
+                    {post.category}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  @{post.handle} · {post.timeAgo} · {post.location} · {post.distance}
+                </p>
+              </div>
+              <button className="text-xl leading-none text-[var(--muted)]">⋯</button>
+            </div>
+
+            <p className="mt-4 text-[15px] leading-7 text-[var(--ink)]">{post.content}</p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)]"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-    </div>
+
+      <div className="relative aspect-[1.05/1] bg-[var(--surface-muted)]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${post.image})` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0)_46%,rgba(17,24,39,0.62)_100%)]" />
+        <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5 text-white">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-white/80">{post.mood}</p>
+            <p className="mt-2 text-lg font-semibold">{post.location}</p>
+          </div>
+          <div className="rounded-full border border-white/20 bg-white/12 px-3 py-2 text-xs font-semibold backdrop-blur">
+            저장 {post.saves}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5">
+        <div className="flex items-center justify-between gap-3 border-b border-[rgba(33,35,38,0.07)] pb-4">
+          <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
+            <button
+              onClick={() => onLike(post.id)}
+              className="rounded-full bg-[rgba(45,168,93,0.12)] px-4 py-2 font-semibold text-[var(--brand-deep)] transition hover:bg-[rgba(45,168,93,0.18)]"
+            >
+              좋아요 {post.likes}
+            </button>
+            <span>댓글 {post.comments.length}</span>
+          </div>
+          <div className="text-sm text-[var(--muted)]">공유 {post.shares}</div>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="공감이나 질문을 남겨보세요"
+            className="flex-1 rounded-full border border-[rgba(33,35,38,0.08)] bg-[var(--surface-muted)] px-4 py-3 text-sm outline-none transition focus:border-[rgba(45,168,93,0.4)] focus:ring-4 focus:ring-[rgba(45,168,93,0.1)]"
+          />
+          <button
+            onClick={handleComment}
+            className="rounded-full bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-deep)]"
+          >
+            댓글
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {post.comments.map((c) => (
+            <div key={c.id} className="flex gap-3 rounded-[22px] bg-[var(--surface-muted)] px-4 py-3">
+              <div
+                className="avatar-ring h-10 w-10 shrink-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${c.avatar})` }}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">
+                  {c.author}
+                  <span className="ml-2 text-xs font-normal text-[var(--muted)]">
+                    @{c.handle} · {c.timeAgo}
+                  </span>
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[var(--ink)]">{c.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 };
 
