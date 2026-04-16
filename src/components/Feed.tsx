@@ -1,20 +1,9 @@
+"use client";
+
 import React from 'react';
 import Post from './Post';
 import PostForm from './PostForm';
-
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-}
-
-interface Post {
-  id: string;
-  author: string;
-  content: string;
-  likes: number;
-  comments: Comment[];
-}
+import { Post as PostType, Comment } from '../types';
 
 interface FeedProps {
   posts: Post[];

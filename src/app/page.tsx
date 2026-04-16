@@ -1,20 +1,9 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import Login from '../components/Login';
 import Feed from '../components/Feed';
-
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-}
-
-interface Post {
-  id: string;
-  author: string;
-  content: string;
-  likes: number;
-  comments: Comment[];
-}
+import { Post, Comment } from '../types';
 
 export default function Home() {
   const [user, setUser] = useState<string | null>(null);

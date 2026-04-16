@@ -1,18 +1,7 @@
+"use client";
+
 import React from 'react';
-
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-}
-
-interface Post {
-  id: string;
-  author: string;
-  content: string;
-  likes: number;
-  comments: Comment[];
-}
+import type { Post, Comment } from '../types';
 
 interface PostProps {
   post: Post;
