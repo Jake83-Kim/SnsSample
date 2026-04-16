@@ -115,9 +115,14 @@ const starterPosts: Post[] = [
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80';
+const fallbackAvatar =
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80';
 
 function getTimeAgo(dateString: string) {
-  const diffMs = Date.now() - new Date(dateString).getTime();
+  const parsed = new Date(dateString).getTime();
+  if (Number.isNaN(parsed)) return '방금';
+
+  const diffMs = Date.now() - parsed;
   const minutes = Math.max(1, Math.floor(diffMs / 60000));
 
   if (minutes < 60) return `${minutes}분 전`;
@@ -129,16 +134,82 @@ function getTimeAgo(dateString: string) {
   return `${days}일 전`;
 }
 
+function normalizeComment(comment: Partial<Comment>, fallbackAuthor: string): Comment {
+  const createdAt = typeof comment.createdAt === 'string' && comment.createdAt
+    ? comment.createdAt
+    : new Date().toISOString();
+
+  return {
+    id: typeof comment.id === 'string' && comment.id ? comment.id : `${Date.now()}-${Math.random()}`,
+    author: typeof comment.author === 'string' && comment.author ? comment.author : fallbackAuthor,
+    handle: typeof comment.handle === 'string' && comment.handle ? comment.handle : fallbackAuthor.toLowerCase().replace(/\s+/g, ''),
+    content: typeof comment.content === 'string' ? comment.content : '',
+    avatar: typeof comment.avatar === 'string' && comment.avatar ? comment.avatar : fallbackAvatar,
+    timeAgo: getTimeAgo(createdAt),
+    createdAt,
+  };
+}
+
+function normalizePost(post: Partial<Post>): Post {
+  const createdAt = typeof post.createdAt === 'string' && post.createdAt
+    ? post.createdAt
+    : new Date().toISOString();
+  const author = typeof post.author === 'string' && post.author ? post.author : '게스트';
+  const handle = typeof post.handle === 'string' && post.handle ? post.handle : author.toLowerCase().replace(/\s+/g, '');
+  const comments = Array.isArray(post.comments) ? post.comments : [];
+  const tags = Array.isArray(post.tags) ? post.tags.filter((tag): tag is string => typeof tag === 'string') : [];
+
+  return {
+    id: typeof post.id === 'string' && post.id ? post.id : `${Date.now()}-${Math.random()}`,
+    author,
+    handle,
+    content: typeof post.content === 'string' ? post.content : '',
+    location: typeof post.location === 'string' && post.location ? post.location : '내 주변 1km',
+    category: typeof post.category === 'string' && post.category ? post.category : 'UPDATE',
+    image: typeof post.image === 'string' && post.image ? post.image : fallbackImage,
+    mood: typeof post.mood === 'string' && post.mood ? post.mood : 'Fresh Update',
+    avatar: typeof post.avatar === 'string' && post.avatar ? post.avatar : fallbackAvatar,
+    timeAgo: getTimeAgo(createdAt),
+    createdAt,
+    distance: typeof post.distance === 'string' && post.distance ? post.distance : '내 주변 1km',
+    saves: typeof post.saves === 'number' ? post.saves : 0,
+    likes: typeof post.likes === 'number' ? post.likes : 0,
+    shares: typeof post.shares === 'number' ? post.shares : 0,
+    tags: tags.length ? tags : ['동네기록'],
+    comments: comments.map((comment) => normalizeComment(comment, author)),
+    isSaved: Boolean(post.isSaved),
+    isLiked: Boolean(post.isLiked),
+    isMine: Boolean(post.isMine),
+  };
+}
+
 function hydratePosts(posts: Post[], currentUser?: string | null) {
   return posts.map((post) => ({
-    ...post,
+    ...normalizePost(post),
     timeAgo: getTimeAgo(post.createdAt),
     isMine: currentUser ? post.author === currentUser : false,
-    comments: post.comments.map((comment) => ({
-      ...comment,
-      timeAgo: getTimeAgo(comment.createdAt),
-    })),
+    comments: (Array.isArray(post.comments) ? post.comments : []).map((comment) => {
+      const normalized = normalizeComment(comment, post.author);
+      return {
+        ...normalized,
+        timeAgo: getTimeAgo(normalized.createdAt),
+      };
+    }),
   }));
+}
+
+function loadStoredPosts() {
+  try {
+    const savedPosts = localStorage.getItem('posts');
+    if (!savedPosts) return starterPosts;
+
+    const parsed = JSON.parse(savedPosts);
+    if (!Array.isArray(parsed)) return starterPosts;
+
+    return parsed.map((post) => normalizePost(post));
+  } catch {
+    return starterPosts;
+  }
 }
 
 export default function Home() {
@@ -147,17 +218,11 @@ export default function Home() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    const savedPosts = localStorage.getItem('posts');
-
     if (savedUser) setUser(savedUser);
 
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-      return;
-    }
-
-    setPosts(starterPosts);
-    localStorage.setItem('posts', JSON.stringify(starterPosts));
+    const normalizedPosts = loadStoredPosts();
+    setPosts(normalizedPosts);
+    localStorage.setItem('posts', JSON.stringify(normalizedPosts));
   }, []);
 
   useEffect(() => {
@@ -201,7 +266,7 @@ export default function Home() {
       category: payload.category,
       image: payload.image || fallbackImage,
       mood: payload.mood,
-      avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80',
+      avatar: fallbackAvatar,
       timeAgo: '방금',
       createdAt,
       distance: '내 주변 1km',
@@ -263,14 +328,14 @@ export default function Home() {
       author: user,
       handle: user.toLowerCase().replace(/\s+/g, ''),
       content: comment,
-      avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80',
+      avatar: fallbackAvatar,
       timeAgo: '방금',
       createdAt,
     };
 
     setPosts((currentPosts) =>
       currentPosts.map((post) =>
-        post.id === id ? { ...post, comments: [...post.comments, newComment] } : post
+        post.id === id ? { ...post, comments: [...(post.comments ?? []), newComment] } : post
       )
     );
   };
@@ -331,4 +396,3 @@ export default function Home() {
     </main>
   );
 }
-

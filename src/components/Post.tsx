@@ -14,6 +14,8 @@ interface PostProps {
 
 const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete, onComment }) => {
   const [comment, setComment] = React.useState('');
+  const tags = Array.isArray(post.tags) ? post.tags : [];
+  const comments = Array.isArray(post.comments) ? post.comments : [];
 
   const handleComment = () => {
     if (!comment.trim()) return;
@@ -50,14 +52,14 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
                   삭제
                 </button>
               ) : (
-                <button className="text-xl leading-none text-[var(--muted)]">?</button>
+                <button className="text-xl leading-none text-[var(--muted)]">⋯</button>
               )}
             </div>
 
             <p className="mt-4 text-[15px] leading-7 text-[var(--ink)]">{post.content}</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
+              {tags.map((tag) => (
                 <span
                   key={tag}
                   className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)]"
@@ -116,9 +118,9 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
             >
               공유 {post.shares}
             </button>
-            <span>댓글 {post.comments.length}</span>
+            <span>댓글 {comments.length}</span>
           </div>
-          <div className="text-sm text-[var(--muted)]">{post.createdAt.slice(0, 10)}</div>
+          <div className="text-sm text-[var(--muted)]">{String(post.createdAt).slice(0, 10)}</div>
         </div>
 
         <div className="mt-4 flex items-center gap-2">
@@ -138,7 +140,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
         </div>
 
         <div className="mt-4 space-y-3">
-          {post.comments.map((commentItem) => (
+          {comments.map((commentItem) => (
             <div key={commentItem.id} className="flex gap-3 rounded-[22px] bg-[var(--surface-muted)] px-4 py-3">
               <div
                 className="avatar-ring h-10 w-10 shrink-0 bg-cover bg-center"
@@ -162,4 +164,3 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
 };
 
 export default PostCard;
-
