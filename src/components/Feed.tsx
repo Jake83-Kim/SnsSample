@@ -156,18 +156,22 @@ const Feed: React.FC<FeedProps> = ({
   };
 
   return (
-    <div className="reddit-shell mx-auto max-w-[1440px]">
-      <header className="reddit-topbar sticky top-0 z-30 mb-4 flex items-center gap-3 rounded-[20px] px-4 py-3">
+    <div className="reddit-shell mx-auto max-w-[1480px]">
+      <header className="reddit-topbar sticky top-0 z-30 mb-4 flex items-center gap-3 rounded-[18px] px-4 py-3">
         <button
           onClick={() => setActiveCommunityId('home')}
           className="flex items-center gap-2 rounded-full bg-[var(--brand-orange)] px-4 py-2 text-sm font-bold text-white"
         >
           <span className="text-lg leading-none">r</span>
-          <span>Community Hub</span>
+          <span>Reddit Style</span>
         </button>
-        <div className="hidden min-w-0 flex-1 items-center rounded-full bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)] md:flex">
-          {activeCommunity ? `${activeCommunity.slug} 안에서 검색하는 느낌의 커뮤니티 뷰` : '추천 커뮤니티와 추천 피드를 보는 홈'}
+
+        <div className="hidden min-w-0 flex-1 items-center rounded-full border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)] md:flex">
+          {activeCommunity
+            ? `${activeCommunity.slug} 안에서 스레드와 토론을 탐색하는 보기`
+            : '추천 커뮤니티와 추천 피드를 중심으로 보는 홈'}
         </div>
+
         <div className="flex items-center gap-2">
           <button
             onClick={onResetDemo}
@@ -184,11 +188,11 @@ const Feed: React.FC<FeedProps> = ({
         </div>
       </header>
 
-      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+      <div className="grid gap-4 xl:grid-cols-[270px_minmax(0,1fr)_330px]">
         <aside className="space-y-4">
-          <section className="reddit-panel rounded-[24px] p-4">
+          <section className="reddit-panel rounded-[20px] p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">
                 {user.slice(0, 2).toUpperCase()}
               </div>
               <div>
@@ -198,15 +202,15 @@ const Feed: React.FC<FeedProps> = ({
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+              <div className="rounded-[14px] bg-[var(--surface-muted)] px-2 py-3">
                 <p className="text-sm font-bold">{joinedCommunities.length}</p>
                 <p className="mt-1 text-[11px] text-[var(--muted)]">Joined</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+              <div className="rounded-[14px] bg-[var(--surface-muted)] px-2 py-3">
                 <p className="text-sm font-bold">{formatCompactNumber(posts.length)}</p>
                 <p className="mt-1 text-[11px] text-[var(--muted)]">Posts</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+              <div className="rounded-[14px] bg-[var(--surface-muted)] px-2 py-3">
                 <p className="text-sm font-bold">{communities.filter((community) => community.isMine).length}</p>
                 <p className="mt-1 text-[11px] text-[var(--muted)]">Created</p>
               </div>
@@ -214,10 +218,10 @@ const Feed: React.FC<FeedProps> = ({
           </section>
 
           {!activeCommunity && (
-            <section className="reddit-panel rounded-[24px] p-4">
+            <section className="reddit-panel rounded-[20px] p-4">
               <p className="text-sm font-bold text-[var(--ink)]">새 커뮤니티 만들기</p>
               <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                레딧의 왼쪽 사이드바 아래 도구 영역처럼, 메인에서 바로 새 보드를 만들 수 있습니다.
+                메인 홈에서 바로 새 보드를 만들고 추천 목록에 노출할 수 있습니다.
               </p>
 
               <form onSubmit={handleCommunitySubmit} className="mt-4 space-y-3">
@@ -226,28 +230,28 @@ const Feed: React.FC<FeedProps> = ({
                   value={communityName}
                   onChange={(event) => setCommunityName(event.target.value)}
                   placeholder="예: SeongsuMakers"
-                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-[14px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <textarea
                   value={communityDescription}
                   onChange={(event) => setCommunityDescription(event.target.value)}
                   rows={3}
                   placeholder="이 커뮤니티에서 다룰 주제를 적어주세요."
-                  className="w-full resize-none rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full resize-none rounded-[14px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <input
                   type="text"
                   value={communityTags}
                   onChange={(event) => setCommunityTags(event.target.value)}
                   placeholder="태그를 쉼표로 구분"
-                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-[14px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <input
                   type="url"
                   value={communityBanner}
                   onChange={(event) => setCommunityBanner(event.target.value)}
                   placeholder="배너 이미지 URL"
-                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-[14px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <button
                   type="submit"
@@ -259,12 +263,12 @@ const Feed: React.FC<FeedProps> = ({
             </section>
           )}
 
-          <section className="reddit-panel rounded-[24px] p-4">
+          <section className="reddit-panel rounded-[20px] p-4">
             <p className="text-sm font-bold text-[var(--ink)]">탐색</p>
             <div className="mt-3 space-y-1">
               <button
                 onClick={() => setActiveCommunityId('home')}
-                className={`flex w-full items-center justify-between rounded-[14px] px-3 py-2.5 text-sm ${
+                className={`flex w-full items-center justify-between rounded-[12px] px-3 py-2.5 text-sm ${
                   !activeCommunity ? 'bg-[var(--surface-muted)] font-bold text-[var(--ink)]' : 'text-[var(--muted)]'
                 }`}
               >
@@ -276,7 +280,7 @@ const Feed: React.FC<FeedProps> = ({
                 <button
                   key={community.id}
                   onClick={() => setActiveCommunityId(community.id)}
-                  className={`flex w-full items-center justify-between rounded-[14px] px-3 py-2.5 text-sm ${
+                  className={`flex w-full items-center justify-between rounded-[12px] px-3 py-2.5 text-sm ${
                     activeCommunity?.id === community.id
                       ? 'bg-[var(--surface-muted)] font-bold text-[var(--ink)]'
                       : 'text-[var(--muted)]'
@@ -288,7 +292,7 @@ const Feed: React.FC<FeedProps> = ({
               ))}
             </div>
 
-            <label className="mt-4 flex items-center justify-between rounded-[14px] bg-[var(--surface-muted)] px-3 py-3 text-sm">
+            <label className="mt-4 flex items-center justify-between rounded-[12px] bg-[var(--surface-muted)] px-3 py-3 text-sm">
               <span className="font-semibold text-[var(--ink)]">가입 커뮤니티만 홈에 반영</span>
               <input
                 type="checkbox"
@@ -301,22 +305,46 @@ const Feed: React.FC<FeedProps> = ({
         </aside>
 
         <main className="space-y-4">
-          <section className="reddit-panel rounded-[24px] p-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
-                  {activeCommunity ? 'Community View' : 'Home Feed'}
-                </p>
-                <h2 className="mt-2 text-2xl font-bold text-[var(--ink)]">
-                  {activeCommunity ? activeCommunity.slug : '추천 커뮤니티와 추천 피드'}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                  {activeCommunity
-                    ? activeCommunity.description
-                    : 'reddit.com처럼 메인에서는 다양한 커뮤니티의 인기 글을 먼저 보고, 커뮤니티 안으로 들어가면 그 보드의 글만 깊게 탐색하는 흐름으로 맞췄습니다.'}
-                </p>
+          {activeCommunity ? (
+            <section className="reddit-panel overflow-hidden rounded-[20px]">
+              <div
+                className="h-28 bg-cover bg-center"
+                style={{ backgroundImage: `url(${activeCommunity.banner})` }}
+              />
+              <div className="p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Community</p>
+                <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-[var(--ink)]">{activeCommunity.slug}</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">{activeCommunity.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
+                    <span>{formatCompactNumber(activeCommunity.members)} members</span>
+                    <span>·</span>
+                    <span>{activeCommunity.online} online</span>
+                  </div>
+                </div>
               </div>
+            </section>
+          ) : (
+            <section className="reddit-panel rounded-[20px] p-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Home Feed</p>
+                  <h2 className="mt-2 text-2xl font-bold text-[var(--ink)]">추천 커뮤니티와 추천 피드</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    reddit.com처럼 홈에서는 여러 커뮤니티의 글을 보고, 관심 있는 보드 안으로 들어가면 그 커뮤니티의 글만 깊게 탐색하도록 구성했습니다.
+                  </p>
+                </div>
+                <div className="hidden rounded-full border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--muted)] md:block">
+                  카드 보기 · 리스트 밀도 강화
+                </div>
+              </div>
+            </section>
+          )}
 
+          <section className="reddit-panel rounded-[20px] p-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-2">
                 {sortModes.map((mode) => (
                   <button
@@ -330,29 +358,29 @@ const Feed: React.FC<FeedProps> = ({
                   </button>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {filters.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setActiveFilter(item)}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold ${
-                    activeFilter === item ? 'bg-[var(--brand-orange)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)]'
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
+              <div className="flex flex-wrap gap-2">
+                {filters.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setActiveFilter(item)}
+                    className={`rounded-full px-3 py-2 text-xs font-semibold ${
+                      activeFilter === item ? 'bg-[var(--brand-orange)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)]'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
           </section>
 
           {!activeCommunity && (
-            <section className="reddit-panel rounded-[24px] p-4">
+            <section className="reddit-panel rounded-[20px] p-4">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-[var(--ink)]">추천 커뮤니티</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">오른쪽 랭킹 박스와 별개로 메인 상단에 추천 보드를 노출합니다.</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">홈 상단에서 먼저 진입할 만한 보드를 보여줍니다.</p>
                 </div>
               </div>
 
@@ -361,10 +389,10 @@ const Feed: React.FC<FeedProps> = ({
                   <button
                     key={community.id}
                     onClick={() => setActiveCommunityId(community.id)}
-                    className="flex items-center gap-3 rounded-[18px] border border-[var(--line)] bg-white p-3 text-left transition hover:border-[rgba(255,106,50,0.32)] hover:bg-[rgba(255,106,50,0.03)]"
+                    className="flex items-center gap-3 rounded-[16px] border border-[var(--line)] bg-white p-3 text-left transition hover:border-[rgba(255,69,0,0.32)] hover:bg-[rgba(255,69,0,0.03)]"
                   >
                     <div
-                      className="h-14 w-14 rounded-[16px] bg-cover bg-center"
+                      className="h-14 w-14 rounded-[14px] bg-cover bg-center"
                       style={{ backgroundImage: `url(${community.icon || community.banner})` }}
                     />
                     <div className="min-w-0 flex-1">
@@ -380,9 +408,9 @@ const Feed: React.FC<FeedProps> = ({
             </section>
           )}
 
-          <section className="space-y-3">
+          <section className="space-y-2">
             {filteredPosts.length === 0 ? (
-              <div className="reddit-panel rounded-[24px] p-8 text-center text-sm text-[var(--muted)]">
+              <div className="reddit-panel rounded-[20px] p-8 text-center text-sm text-[var(--muted)]">
                 이 조건에 맞는 글이 없습니다. 다른 커뮤니티를 보거나 필터를 바꿔보세요.
               </div>
             ) : (
@@ -402,31 +430,27 @@ const Feed: React.FC<FeedProps> = ({
         </main>
 
         <aside className="space-y-4">
-          <section className="reddit-panel rounded-[24px] p-4">
+          <section className="reddit-panel rounded-[20px] p-4">
             <p className="text-sm font-bold text-[var(--ink)]">
               {activeCommunity ? `${activeCommunity.slug} 정보` : 'Popular Communities'}
             </p>
 
             {activeCommunity ? (
               <div className="mt-4">
-                <div
-                  className="h-28 rounded-[18px] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${activeCommunity.banner})` }}
-                />
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-[14px] bg-[var(--surface-muted)] px-3 py-4">
                     <p className="text-lg font-bold">{formatCompactNumber(activeCommunity.members)}</p>
                     <p className="mt-1 text-xs text-[var(--muted)]">Members</p>
                   </div>
-                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                  <div className="rounded-[14px] bg-[var(--surface-muted)] px-3 py-4">
                     <p className="text-lg font-bold">{activeCommunity.online}</p>
                     <p className="mt-1 text-xs text-[var(--muted)]">Online</p>
                   </div>
-                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                  <div className="rounded-[14px] bg-[var(--surface-muted)] px-3 py-4">
                     <p className="text-lg font-bold">{activeCommunityPostCount}</p>
                     <p className="mt-1 text-xs text-[var(--muted)]">Threads</p>
                   </div>
-                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                  <div className="rounded-[14px] bg-[var(--surface-muted)] px-3 py-4">
                     <p className="text-lg font-bold">{activeCommunityTotalComments}</p>
                     <p className="mt-1 text-xs text-[var(--muted)]">Comments</p>
                   </div>
@@ -452,7 +476,7 @@ const Feed: React.FC<FeedProps> = ({
             ) : (
               <div className="mt-4 space-y-2">
                 {recommendedCommunities.slice(0, 5).map((community, index) => (
-                  <div key={community.id} className="flex items-center gap-3 rounded-[16px] bg-[var(--surface-muted)] px-3 py-3">
+                  <div key={community.id} className="flex items-center gap-3 rounded-[14px] bg-[var(--surface-muted)] px-3 py-3">
                     <span className="w-5 text-center text-xs font-bold text-[var(--muted)]">{index + 1}</span>
                     <div className="min-w-0 flex-1">
                       <button
@@ -478,14 +502,14 @@ const Feed: React.FC<FeedProps> = ({
           </section>
 
           {!activeCommunity && (
-            <section className="reddit-panel rounded-[24px] p-4">
+            <section className="reddit-panel rounded-[20px] p-4">
               <p className="text-sm font-bold text-[var(--ink)]">Trending Today</p>
               <div className="mt-4 space-y-3">
                 {trendingPosts.map((post) => (
                   <button
                     key={post.id}
                     onClick={() => setActiveCommunityId(post.communityId || 'home')}
-                    className="block w-full rounded-[16px] bg-[var(--surface-muted)] p-3 text-left"
+                    className="block w-full rounded-[14px] bg-[var(--surface-muted)] p-3 text-left"
                   >
                     <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--brand-orange-deep)]">
                       {post.communitySlug || 'Home Feed'}
@@ -505,7 +529,7 @@ const Feed: React.FC<FeedProps> = ({
       {activeCommunity && (
         <button
           onClick={() => setIsComposerOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-orange)] text-3xl font-light text-white shadow-[0_18px_40px_rgba(255,106,50,0.35)]"
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-orange)] text-3xl font-light text-white shadow-[0_18px_40px_rgba(255,69,0,0.35)]"
           aria-label="새 글 작성"
         >
           +

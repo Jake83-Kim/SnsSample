@@ -23,12 +23,12 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
   };
 
   return (
-    <article className="reddit-post rounded-[20px] p-3">
+    <article className="reddit-post rounded-[18px] p-3">
       <div className="flex gap-3">
-        <div className="hidden w-14 shrink-0 flex-col items-center rounded-[16px] bg-[var(--surface-muted)] px-2 py-3 sm:flex">
+        <div className="hidden w-12 shrink-0 flex-col items-center rounded-[14px] bg-[var(--surface-muted)] px-2 py-3 sm:flex">
           <button
             onClick={() => onLike(post.id)}
-            className={`rounded-full px-2 py-1 text-lg font-bold leading-none ${
+            className={`rounded-full px-2 py-1 text-base font-bold leading-none ${
               post.isLiked ? 'text-[var(--brand-orange)]' : 'text-[var(--muted)]'
             }`}
             aria-label="업보트"
@@ -38,7 +38,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
           <span className="mt-2 text-sm font-bold text-[var(--ink)]">{post.likes}</span>
           <button
             onClick={() => onSave(post.id)}
-            className={`mt-2 rounded-full px-2 py-1 text-lg leading-none ${
+            className={`mt-2 rounded-full px-2 py-1 text-base leading-none ${
               post.isSaved ? 'text-[var(--ink)]' : 'text-[var(--muted)]'
             }`}
             aria-label="저장"
@@ -53,7 +53,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
               <p className="text-xs font-semibold text-[var(--muted)]">
                 {post.communitySlug || 'Home'} · @{post.handle} · {post.timeAgo}
               </p>
-              <h3 className="mt-1 text-lg font-bold leading-7 text-[var(--ink)]">
+              <h3 className="mt-1 text-[18px] font-bold leading-7 text-[var(--ink)]">
                 {post.communityName ? `${post.communityName} 스레드` : post.location}
               </h3>
             </div>
@@ -85,7 +85,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
 
             {post.image ? (
               <div
-                className="hidden h-24 w-24 shrink-0 rounded-[16px] bg-cover bg-center md:block"
+                className="hidden h-24 w-24 shrink-0 rounded-[14px] bg-cover bg-center md:block"
                 style={{ backgroundImage: `url(${post.image})` }}
               />
             ) : null}
@@ -132,7 +132,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
           {comments.length > 0 && (
             <div className="mt-4 space-y-2">
               {comments.slice(-2).map((commentItem) => (
-                <div key={commentItem.id} className="rounded-[16px] bg-[var(--surface-muted)] px-4 py-3">
+                <div key={commentItem.id} className="rounded-[14px] bg-[var(--surface-muted)] px-4 py-3">
                   <p className="text-xs font-semibold text-[var(--muted)]">
                     {commentItem.author} · @{commentItem.handle} · {commentItem.timeAgo}
                   </p>
