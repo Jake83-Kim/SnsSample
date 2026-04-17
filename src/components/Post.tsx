@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from 'react';
 import type { Post } from '../types';
@@ -34,14 +34,19 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-semibold">{post.author}</h3>
+                  {post.communitySlug ? (
+                    <span className="rounded-full bg-[rgba(255,106,50,0.12)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-orange-deep)]">
+                      {post.communitySlug}
+                    </span>
+                  ) : null}
                   <span className="rounded-full bg-[rgba(45,168,93,0.12)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-deep)]">
                     {post.category}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-[var(--muted)]">
-                  @{post.handle} · {post.timeAgo} · {post.location} · {post.distance}
+                  @{post.handle} · {post.timeAgo} · {post.location}
                 </p>
               </div>
               {post.isMine ? (
@@ -72,20 +77,21 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
         </div>
       </div>
 
-      <div className="relative aspect-[1.05/1] bg-[var(--surface-muted)]">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${post.image})` }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0)_46%,rgba(17,24,39,0.62)_100%)]" />
-        <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5 text-white">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-white/80">{post.mood}</p>
-            <p className="mt-2 text-lg font-semibold">{post.location}</p>
+      <div className="relative aspect-[1.18/1] bg-[var(--surface-muted)]">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${post.image})` }} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.04)_40%,rgba(17,24,39,0.68)_100%)]" />
+        <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-5 text-white">
+          <div className="rounded-full border border-white/20 bg-black/20 px-3 py-2 text-xs font-semibold backdrop-blur">
+            {post.communitySlug || 'Home Feed'}
           </div>
           <div className="rounded-full border border-white/20 bg-white/12 px-3 py-2 text-xs font-semibold backdrop-blur">
             저장 {post.saves}
           </div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+          <p className="text-xs uppercase tracking-[0.24em] text-white/80">{post.mood}</p>
+          <p className="mt-2 text-lg font-semibold">{post.communityName || post.location}</p>
+          <p className="mt-1 text-sm text-white/80">{post.distance}</p>
         </div>
       </div>
 
@@ -96,11 +102,11 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
               onClick={() => onLike(post.id)}
               className={`rounded-full px-4 py-2 font-semibold transition ${
                 post.isLiked
-                  ? 'bg-[var(--brand)] text-white'
-                  : 'bg-[rgba(45,168,93,0.12)] text-[var(--brand-deep)] hover:bg-[rgba(45,168,93,0.18)]'
+                  ? 'bg-[var(--brand-orange)] text-white'
+                  : 'bg-[rgba(255,106,50,0.12)] text-[var(--brand-orange-deep)] hover:bg-[rgba(255,106,50,0.18)]'
               }`}
             >
-              좋아요 {post.likes}
+              업보트 {post.likes}
             </button>
             <button
               onClick={() => onSave(post.id)}
@@ -128,12 +134,12 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
             type="text"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="공감이나 질문을 남겨보세요"
-            className="flex-1 rounded-full border border-[rgba(33,35,38,0.08)] bg-[var(--surface-muted)] px-4 py-3 text-sm outline-none transition focus:border-[rgba(45,168,93,0.4)] focus:ring-4 focus:ring-[rgba(45,168,93,0.1)]"
+            placeholder="이 스레드에 댓글을 남겨보세요"
+            className="flex-1 rounded-full border border-[rgba(33,35,38,0.08)] bg-[var(--surface-muted)] px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.35)] focus:ring-4 focus:ring-[rgba(255,106,50,0.08)]"
           />
           <button
             onClick={handleComment}
-            className="rounded-full bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-deep)]"
+            className="rounded-full bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-orange-deep)]"
           >
             댓글
           </button>
