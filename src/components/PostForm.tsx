@@ -16,12 +16,13 @@ interface PostFormProps {
   user: string;
   communities: Community[];
   activeCommunityId?: string | null;
+  onSubmitted?: () => void;
 }
 
 const defaultImage =
   'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80';
 
-const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCommunityId }) => {
+const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCommunityId, onSubmitted }) => {
   const joinedCommunities = communities.filter((community) => community.isJoined);
   const [content, setContent] = React.useState('');
   const [location, setLocation] = React.useState('성수동');
@@ -65,6 +66,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
     setContent('');
     setTags('질문, 추천');
     setMood('Fresh Thread');
+    onSubmitted?.();
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
