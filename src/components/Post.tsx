@@ -23,9 +23,9 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
   };
 
   return (
-    <article className="reddit-post rounded-[18px] p-3">
+    <article className="reddit-post rounded-[16px] p-3">
       <div className="flex gap-3">
-        <div className="hidden w-12 shrink-0 flex-col items-center rounded-[14px] bg-[var(--surface-muted)] px-2 py-3 sm:flex">
+        <div className="hidden w-12 shrink-0 flex-col items-center rounded-[12px] bg-[var(--surface-muted)] px-2 py-3 sm:flex">
           <button
             onClick={() => onLike(post.id)}
             className={`rounded-full px-2 py-1 text-base font-bold leading-none ${
@@ -85,7 +85,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
 
             {post.image ? (
               <div
-                className="hidden h-24 w-24 shrink-0 rounded-[14px] bg-cover bg-center md:block"
+                className="hidden h-24 w-24 shrink-0 rounded-[12px] bg-cover bg-center md:block"
                 style={{ backgroundImage: `url(${post.image})` }}
               />
             ) : null}
@@ -132,7 +132,7 @@ const PostCard: React.FC<PostProps> = ({ post, onLike, onSave, onShare, onDelete
           {comments.length > 0 && (
             <div className="mt-4 space-y-2">
               {comments.slice(-2).map((commentItem) => (
-                <div key={commentItem.id} className="rounded-[14px] bg-[var(--surface-muted)] px-4 py-3">
+                <div key={commentItem.id} className="rounded-[12px] bg-[var(--surface-muted)] px-4 py-3">
                   <p className="text-xs font-semibold text-[var(--muted)]">
                     {commentItem.author} · @{commentItem.handle} · {commentItem.timeAgo}
                   </p>

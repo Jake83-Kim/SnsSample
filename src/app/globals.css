@@ -53,6 +53,17 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.reddit-search {
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.reddit-search:focus-within {
+  border-color: rgba(255, 69, 0, 0.35);
+  background: #fff;
+}
+
 .reddit-panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -63,6 +74,29 @@ a {
   background: var(--panel);
   border: 1px solid var(--line);
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.reddit-post:hover {
+  border-color: rgba(26, 26, 27, 0.14);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.reddit-nav-item {
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.reddit-nav-item:hover {
+  background: rgba(246, 247, 248, 0.9);
+}
+
+@media (max-width: 1279px) {
+  .reddit-shell {
+    max-width: 1120px;
+  }
 }
 
 .glass-card {
