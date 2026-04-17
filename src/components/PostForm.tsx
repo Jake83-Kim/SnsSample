@@ -45,8 +45,8 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
 
   const selectedCommunity = communities.find((community) => community.id === communityId);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!content.trim() || !communityId) return;
 
     onPost({
@@ -83,37 +83,35 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="panel rounded-[30px] p-5 shadow-[0_22px_50px_rgba(31,41,55,0.08)]">
+    <form onSubmit={handleSubmit} className="reddit-panel rounded-[28px] p-5">
       <div className="flex items-start gap-3">
-        <div className="avatar-ring flex h-12 w-12 shrink-0 items-center justify-center bg-[var(--brand-orange)] text-sm font-semibold text-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">
           {user.slice(0, 2).toUpperCase()}
         </div>
         <div className="flex-1">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold">{user}</p>
-              <p className="text-xs text-[var(--muted)]">
-                가입한 커뮤니티를 선택해서 레딧 스레드처럼 글을 올릴 수 있어요.
-              </p>
+              <p className="text-sm font-bold text-[var(--ink)]">{user}</p>
+              <p className="text-xs text-[var(--muted)]">커뮤니티 안에서만 글을 올릴 수 있게 구성했습니다.</p>
             </div>
-            <span className="rounded-full bg-[rgba(255,106,50,0.12)] px-3 py-1 text-xs font-semibold text-[var(--brand-orange-deep)]">
+            <span className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-xs font-bold text-[var(--ink)]">
               {selectedCommunity?.slug ?? '커뮤니티 선택'}
             </span>
           </div>
 
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="질문, 후기, 추천 장소, 오늘의 발견을 커뮤니티에 남겨보세요."
-            className="min-h-[110px] w-full resize-none rounded-[24px] border border-[rgba(33,35,38,0.08)] bg-[var(--surface-muted)] px-4 py-4 text-sm leading-6 outline-none transition focus:border-[rgba(255,106,50,0.38)] focus:ring-4 focus:ring-[rgba(255,106,50,0.08)]"
-            rows={4}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="질문, 후기, 추천 장소, 오늘의 발견을 남겨보세요."
+            rows={5}
+            className="w-full resize-none rounded-[18px] border border-[var(--line)] bg-white px-4 py-4 text-sm leading-7 outline-none"
           />
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <select
               value={communityId}
-              onChange={(e) => setCommunityId(e.target.value)}
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)]"
+              onChange={(event) => setCommunityId(event.target.value)}
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
             >
               {joinedCommunities.length === 0 ? (
                 <option value="">가입된 커뮤니티 없음</option>
@@ -125,17 +123,19 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
                 ))
               )}
             </select>
+
             <input
               type="text"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(event) => setLocation(event.target.value)}
               placeholder="위치"
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)]"
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
             />
+
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)]"
+              onChange={(event) => setCategory(event.target.value)}
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
             >
               <option value="COMMUNITY">커뮤니티</option>
               <option value="CAFE">카페</option>
@@ -145,19 +145,21 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
               <option value="LIFESTYLE">라이프</option>
               <option value="UPDATE">업데이트</option>
             </select>
+
             <input
               type="text"
               value={mood}
-              onChange={(e) => setMood(e.target.value)}
+              onChange={(event) => setMood(event.target.value)}
               placeholder="무드"
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)]"
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
             />
+
             <input
               type="text"
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={(event) => setTags(event.target.value)}
               placeholder="태그를 쉼표로 구분"
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)] md:col-span-2"
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none md:col-span-2"
             />
           </div>
 
@@ -165,18 +167,18 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
             <input
               type="url"
               value={image}
-              onChange={(e) => setImage(e.target.value)}
+              onChange={(event) => setImage(event.target.value)}
               placeholder="이미지 URL"
-              className="rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.38)]"
+              className="rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
             />
-            <label className="inline-flex cursor-pointer items-center justify-center rounded-[18px] border border-dashed border-[rgba(33,35,38,0.16)] bg-white px-4 py-3 text-sm font-semibold text-[var(--muted)]">
+            <label className="inline-flex cursor-pointer items-center justify-center rounded-[16px] border border-dashed border-[var(--line)] bg-white px-4 py-3 text-sm font-semibold text-[var(--muted)]">
               이미지 업로드
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
           </div>
 
-          <div className="mt-3 overflow-hidden rounded-[24px] bg-[var(--surface-muted)]">
-            <div className="aspect-[16/9] w-full bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+          <div className="mt-3 overflow-hidden rounded-[20px] bg-[var(--surface-muted)]">
+            <div className="aspect-[16/8] w-full bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -190,7 +192,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPost, user, communities, activeCo
             <button
               type="submit"
               disabled={!communityId}
-              className="rounded-full bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-orange-deep)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-[var(--brand-orange)] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               커뮤니티에 게시
             </button>

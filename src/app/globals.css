@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --surface: #f7f7f3;
-  --surface-muted: #f0f1ec;
-  --panel: rgba(255, 255, 255, 0.82);
-  --ink: #202225;
-  --muted: #6a6d72;
+  --surface: #dae0e6;
+  --surface-muted: #f6f7f8;
+  --panel: rgba(255, 255, 255, 0.96);
+  --ink: #1a1a1b;
+  --muted: #787c7e;
   --brand: #2da85d;
   --brand-deep: #23864a;
-  --brand-orange: #ff6a32;
-  --brand-orange-deep: #de5422;
-  --line: rgba(32, 34, 37, 0.08);
+  --brand-orange: #ff4500;
+  --brand-orange-deep: #e03d00;
+  --line: rgba(26, 26, 27, 0.08);
 }
 
 * {
@@ -25,10 +25,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(255, 106, 50, 0.18), transparent 24%),
-    radial-gradient(circle at top right, rgba(103, 230, 171, 0.18), transparent 24%),
-    linear-gradient(180deg, #fbfbf8 0%, #f5f5f0 100%);
+  background: var(--surface);
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
 }
@@ -43,6 +40,29 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.85);
   box-shadow: 0 20px 45px rgba(31, 41, 55, 0.06);
   backdrop-filter: blur(18px);
+}
+
+.reddit-shell {
+  padding-bottom: 96px;
+}
+
+.reddit-topbar {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.reddit-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.reddit-post {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
 }
 
 .glass-card {

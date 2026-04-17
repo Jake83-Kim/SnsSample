@@ -57,7 +57,7 @@ const Feed: React.FC<FeedProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = React.useState('ALL');
   const [activeCommunityId, setActiveCommunityId] = React.useState('home');
-  const [sortMode, setSortMode] = React.useState<'HOT' | 'NEW' | 'TOP'>('HOT');
+  const [sortMode, setSortMode] = React.useState<'BEST' | 'HOT' | 'NEW' | 'TOP'>('BEST');
   const [joinedOnlyHome, setJoinedOnlyHome] = React.useState(true);
   const [isComposerOpen, setIsComposerOpen] = React.useState(false);
   const [communityName, setCommunityName] = React.useState('');
@@ -66,14 +66,13 @@ const Feed: React.FC<FeedProps> = ({
   const [communityBanner, setCommunityBanner] = React.useState('');
 
   const filters = ['ALL', 'COMMUNITY', 'CAFE', 'FOOD', 'EXHIBIT', 'POP-UP', 'LIFESTYLE', 'UPDATE'];
-  const sortModes: Array<'HOT' | 'NEW' | 'TOP'> = ['HOT', 'NEW', 'TOP'];
+  const sortModes: Array<'BEST' | 'HOT' | 'NEW' | 'TOP'> = ['BEST', 'HOT', 'NEW', 'TOP'];
   const joinedCommunities = communities.filter((community) => community.isJoined);
-  const trendingCommunities = communities.filter((community) => community.isTrending).slice(0, 3);
+  const recommendedCommunities = [...communities]
+    .sort((left, right) => right.members + right.online - (left.members + left.online))
+    .slice(0, 6);
   const activeCommunity =
     activeCommunityId === 'home' ? null : communities.find((community) => community.id === activeCommunityId) ?? null;
-  const recommendedCommunities = communities
-    .filter((community) => !joinedOnlyHome || community.isJoined || community.isTrending)
-    .slice(0, 6);
 
   const homeScopedPosts = joinedOnlyHome
     ? posts.filter((post) => {
@@ -82,36 +81,48 @@ const Feed: React.FC<FeedProps> = ({
       })
     : posts;
 
-  const scopedPosts = activeCommunity ? posts.filter((post) => post.communityId === activeCommunity.id) : homeScopedPosts;
+  const scopedPosts = activeCommunity
+    ? posts.filter((post) => post.communityId === activeCommunity.id)
+    : homeScopedPosts;
+
   const categoryFilteredPosts =
     activeFilter === 'ALL' ? scopedPosts : scopedPosts.filter((post) => post.category === activeFilter);
+
   const filteredPosts = [...categoryFilteredPosts].sort((left, right) => {
+    const leftTop = left.likes + left.saves + left.comments.length * 2 + left.shares * 2;
+    const rightTop = right.likes + right.saves + right.comments.length * 2 + right.shares * 2;
+    const leftHot = leftTop - Math.floor((Date.now() - new Date(left.createdAt).getTime()) / 7200000);
+    const rightHot = rightTop - Math.floor((Date.now() - new Date(right.createdAt).getTime()) / 7200000);
+
     if (sortMode === 'NEW') {
       return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     }
 
     if (sortMode === 'TOP') {
-      const leftScore = left.likes + left.saves + left.comments.length * 2 + left.shares * 2;
-      const rightScore = right.likes + right.saves + right.comments.length * 2 + right.shares * 2;
-      return rightScore - leftScore;
+      return rightTop - leftTop;
     }
 
-    const leftHot =
-      left.likes * 2 + left.comments.length * 3 + left.shares * 3 + left.saves - Math.floor((Date.now() - new Date(left.createdAt).getTime()) / 3600000);
-    const rightHot =
-      right.likes * 2 + right.comments.length * 3 + right.shares * 3 + right.saves - Math.floor((Date.now() - new Date(right.createdAt).getTime()) / 3600000);
-    return rightHot - leftHot;
+    if (sortMode === 'HOT') {
+      return rightHot - leftHot;
+    }
+
+    return rightHot + right.comments.length - (leftHot + left.comments.length);
   });
-  const featuredPost = filteredPosts[0] ?? posts[0];
+
+  const trendingPosts = [...homeScopedPosts]
+    .sort((left, right) => right.likes + right.comments.length * 2 - (left.likes + left.comments.length * 2))
+    .slice(0, 3);
 
   const activeCommunityPostCount = activeCommunity
     ? posts.filter((post) => post.communityId === activeCommunity.id).length
-    : homeScopedPosts.length;
+    : filteredPosts.length;
+
   const activeCommunityTotalComments = activeCommunity
     ? posts
         .filter((post) => post.communityId === activeCommunity.id)
         .reduce((total, post) => total + post.comments.length, 0)
-    : homeScopedPosts.reduce((total, post) => total + post.comments.length, 0);
+    : filteredPosts.reduce((total, post) => total + post.comments.length, 0);
+
   const activeCommunityTopTags = activeCommunity
     ? Array.from(
         new Set(
@@ -142,457 +153,359 @@ const Feed: React.FC<FeedProps> = ({
     setCommunityTags('지역소식, 추천');
     setCommunityBanner('');
     setActiveCommunityId('home');
-    setActiveFilter('ALL');
-  };
-
-  const handleOpenComposer = () => {
-    if (!activeCommunity) return;
-    setIsComposerOpen(true);
-  };
-
-  const handleCloseComposer = () => {
-    setIsComposerOpen(false);
   };
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
-      <aside className="space-y-5">
-        <section className="panel rounded-[32px] p-5">
-          <div className="flex items-center gap-3">
-            <div className="avatar-ring flex h-14 w-14 items-center justify-center bg-[var(--brand-orange)] text-lg font-semibold text-white">
-              {user.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-lg font-semibold">{user}</p>
-              <p className="text-sm text-[var(--muted)]">@{user.toLowerCase().replace(/\s+/g, '')}</p>
-            </div>
-          </div>
+    <div className="reddit-shell mx-auto max-w-[1440px]">
+      <header className="reddit-topbar sticky top-0 z-30 mb-4 flex items-center gap-3 rounded-[20px] px-4 py-3">
+        <button
+          onClick={() => setActiveCommunityId('home')}
+          className="flex items-center gap-2 rounded-full bg-[var(--brand-orange)] px-4 py-2 text-sm font-bold text-white"
+        >
+          <span className="text-lg leading-none">r</span>
+          <span>Community Hub</span>
+        </button>
+        <div className="hidden min-w-0 flex-1 items-center rounded-full bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)] md:flex">
+          {activeCommunity ? `${activeCommunity.slug} 안에서 검색하는 느낌의 커뮤니티 뷰` : '추천 커뮤니티와 추천 피드를 보는 홈'}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onResetDemo}
+            className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--muted)]"
+          >
+            초기화
+          </button>
+          <button
+            onClick={onLogout}
+            className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-semibold text-white"
+          >
+            로그아웃
+          </button>
+        </div>
+      </header>
 
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={onLogout}
-              className="flex-1 rounded-full bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-orange-deep)]"
-            >
-              로그아웃
-            </button>
-            <button
-              onClick={onResetDemo}
-              className="flex-1 rounded-full bg-[var(--surface-muted)] px-4 py-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[rgba(32,34,37,0.08)]"
-            >
-              데모 초기화
-            </button>
-          </div>
-
-          <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-[22px] bg-[var(--surface-muted)] px-3 py-4">
-              <p className="text-lg font-semibold">{joinedCommunities.length}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">가입</p>
-            </div>
-            <div className="rounded-[22px] bg-[var(--surface-muted)] px-3 py-4">
-              <p className="text-lg font-semibold">{formatCompactNumber(posts.length)}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">피드</p>
-            </div>
-            <div className="rounded-[22px] bg-[var(--surface-muted)] px-3 py-4">
-              <p className="text-lg font-semibold">{communities.filter((community) => community.isMine).length}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">생성</p>
-            </div>
-          </div>
-        </section>
-
-        {!activeCommunity && (
-          <section className="panel rounded-[32px] p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold">새 커뮤니티 생성</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">메인에서 바로 새 보드를 만들 수 있어요.</p>
+      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+        <aside className="space-y-4">
+          <section className="reddit-panel rounded-[24px] p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">
+                {user.slice(0, 2).toUpperCase()}
               </div>
-              <span className="rounded-full bg-[rgba(255,106,50,0.12)] px-3 py-1 text-[11px] font-semibold text-[var(--brand-orange-deep)]">
-                Create
-              </span>
+              <div>
+                <p className="text-sm font-bold text-[var(--ink)]">{user}</p>
+                <p className="text-xs text-[var(--muted)]">@{user.toLowerCase().replace(/\s+/g, '')}</p>
+              </div>
             </div>
 
-            <form onSubmit={handleCommunitySubmit} className="mt-4 space-y-3">
-              <input
-                type="text"
-                value={communityName}
-                onChange={(event) => setCommunityName(event.target.value)}
-                placeholder="예: SeongsuMakers"
-                className="w-full rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.35)]"
-              />
-              <textarea
-                value={communityDescription}
-                onChange={(event) => setCommunityDescription(event.target.value)}
-                placeholder="커뮤니티 목적과 분위기를 적어주세요."
-                rows={3}
-                className="w-full resize-none rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.35)]"
-              />
-              <input
-                type="text"
-                value={communityTags}
-                onChange={(event) => setCommunityTags(event.target.value)}
-                placeholder="태그를 쉼표로 구분"
-                className="w-full rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.35)]"
-              />
-              <input
-                type="url"
-                value={communityBanner}
-                onChange={(event) => setCommunityBanner(event.target.value)}
-                placeholder="배너 이미지 URL"
-                className="w-full rounded-[18px] border border-[rgba(33,35,38,0.08)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(255,106,50,0.35)]"
-              />
-              <button
-                type="submit"
-                className="w-full rounded-full bg-[var(--brand-orange)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-orange-deep)]"
-              >
-                새 커뮤니티 생성
-              </button>
-            </form>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+                <p className="text-sm font-bold">{joinedCommunities.length}</p>
+                <p className="mt-1 text-[11px] text-[var(--muted)]">Joined</p>
+              </div>
+              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+                <p className="text-sm font-bold">{formatCompactNumber(posts.length)}</p>
+                <p className="mt-1 text-[11px] text-[var(--muted)]">Posts</p>
+              </div>
+              <div className="rounded-[16px] bg-[var(--surface-muted)] px-2 py-3">
+                <p className="text-sm font-bold">{communities.filter((community) => community.isMine).length}</p>
+                <p className="mt-1 text-[11px] text-[var(--muted)]">Created</p>
+              </div>
+            </div>
           </section>
-        )}
 
-        <section className="panel rounded-[32px] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold">피드 탐색</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">메인과 커뮤니티 뷰를 오가며 탐색할 수 있어요.</p>
-            </div>
-            <span className="rounded-full bg-[rgba(255,106,50,0.12)] px-3 py-1 text-[11px] font-semibold text-[var(--brand-orange-deep)]">
-              Reddit Flow
-            </span>
-          </div>
+          {!activeCommunity && (
+            <section className="reddit-panel rounded-[24px] p-4">
+              <p className="text-sm font-bold text-[var(--ink)]">새 커뮤니티 만들기</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                레딧의 왼쪽 사이드바 아래 도구 영역처럼, 메인에서 바로 새 보드를 만들 수 있습니다.
+              </p>
 
-          <label className="mt-4 flex items-center justify-between rounded-[18px] bg-[var(--surface-muted)] px-4 py-3 text-sm">
-            <span className="font-semibold">가입한 커뮤니티만 메인에 반영</span>
-            <input
-              type="checkbox"
-              checked={joinedOnlyHome}
-              onChange={(event) => setJoinedOnlyHome(event.target.checked)}
-              className="h-4 w-4 accent-[var(--brand-orange)]"
-            />
-          </label>
+              <form onSubmit={handleCommunitySubmit} className="mt-4 space-y-3">
+                <input
+                  type="text"
+                  value={communityName}
+                  onChange={(event) => setCommunityName(event.target.value)}
+                  placeholder="예: SeongsuMakers"
+                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                />
+                <textarea
+                  value={communityDescription}
+                  onChange={(event) => setCommunityDescription(event.target.value)}
+                  rows={3}
+                  placeholder="이 커뮤니티에서 다룰 주제를 적어주세요."
+                  className="w-full resize-none rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                />
+                <input
+                  type="text"
+                  value={communityTags}
+                  onChange={(event) => setCommunityTags(event.target.value)}
+                  placeholder="태그를 쉼표로 구분"
+                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                />
+                <input
+                  type="url"
+                  value={communityBanner}
+                  onChange={(event) => setCommunityBanner(event.target.value)}
+                  placeholder="배너 이미지 URL"
+                  className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none"
+                />
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-[var(--brand-orange)] px-4 py-3 text-sm font-bold text-white"
+                >
+                  커뮤니티 생성
+                </button>
+              </form>
+            </section>
+          )}
 
-          <div className="mt-4 space-y-2">
-            <button
-              onClick={() => setActiveCommunityId('home')}
-              className={`flex w-full items-center justify-between rounded-[18px] px-4 py-3 text-left transition ${
-                activeCommunityId === 'home'
-                  ? 'bg-[var(--ink)] text-white'
-                  : 'bg-[var(--surface-muted)] text-[var(--ink)] hover:bg-[rgba(32,34,37,0.08)]'
-              }`}
-            >
-              <span className="font-semibold">메인 홈</span>
-              <span className="text-xs">{formatCompactNumber(homeScopedPosts.length)}</span>
-            </button>
-
-            {joinedCommunities.map((community) => (
+          <section className="reddit-panel rounded-[24px] p-4">
+            <p className="text-sm font-bold text-[var(--ink)]">탐색</p>
+            <div className="mt-3 space-y-1">
               <button
-                key={community.id}
-                onClick={() => setActiveCommunityId(community.id)}
-                className={`flex w-full items-center justify-between rounded-[18px] px-4 py-3 text-left transition ${
-                  activeCommunityId === community.id
-                    ? 'bg-[rgba(255,106,50,0.14)] text-[var(--ink)]'
-                    : 'bg-[var(--surface-muted)] text-[var(--ink)] hover:bg-[rgba(32,34,37,0.08)]'
+                onClick={() => setActiveCommunityId('home')}
+                className={`flex w-full items-center justify-between rounded-[14px] px-3 py-2.5 text-sm ${
+                  !activeCommunity ? 'bg-[var(--surface-muted)] font-bold text-[var(--ink)]' : 'text-[var(--muted)]'
                 }`}
               >
-                <div>
-                  <p className="text-sm font-semibold">{community.slug}</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">{formatCompactNumber(community.members)} members</p>
-                </div>
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: community.theme || 'var(--brand-orange)' }}
-                />
+                <span>Home</span>
+                <span>{formatCompactNumber(homeScopedPosts.length)}</span>
               </button>
-            ))}
-          </div>
-        </section>
 
-        <section className="panel rounded-[32px] p-5">
-          <p className="text-sm font-semibold">트렌딩 커뮤니티</p>
-          <div className="mt-4 space-y-3">
-            {trendingCommunities.map((community) => (
-              <div key={community.id} className="rounded-[22px] bg-[var(--surface-muted)] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">{community.slug}</p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">{community.online}명 접속 중</p>
-                  </div>
+              {joinedCommunities.map((community) => (
+                <button
+                  key={community.id}
+                  onClick={() => setActiveCommunityId(community.id)}
+                  className={`flex w-full items-center justify-between rounded-[14px] px-3 py-2.5 text-sm ${
+                    activeCommunity?.id === community.id
+                      ? 'bg-[var(--surface-muted)] font-bold text-[var(--ink)]'
+                      : 'text-[var(--muted)]'
+                  }`}
+                >
+                  <span className="truncate">{community.slug}</span>
+                  <span>{formatCompactNumber(community.members)}</span>
+                </button>
+              ))}
+            </div>
+
+            <label className="mt-4 flex items-center justify-between rounded-[14px] bg-[var(--surface-muted)] px-3 py-3 text-sm">
+              <span className="font-semibold text-[var(--ink)]">가입 커뮤니티만 홈에 반영</span>
+              <input
+                type="checkbox"
+                checked={joinedOnlyHome}
+                onChange={(event) => setJoinedOnlyHome(event.target.checked)}
+                className="h-4 w-4 accent-[var(--brand-orange)]"
+              />
+            </label>
+          </section>
+        </aside>
+
+        <main className="space-y-4">
+          <section className="reddit-panel rounded-[24px] p-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+                  {activeCommunity ? 'Community View' : 'Home Feed'}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-[var(--ink)]">
+                  {activeCommunity ? activeCommunity.slug : '추천 커뮤니티와 추천 피드'}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                  {activeCommunity
+                    ? activeCommunity.description
+                    : 'reddit.com처럼 메인에서는 다양한 커뮤니티의 인기 글을 먼저 보고, 커뮤니티 안으로 들어가면 그 보드의 글만 깊게 탐색하는 흐름으로 맞췄습니다.'}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {sortModes.map((mode) => (
                   <button
-                    onClick={() => onJoinCommunity(community.id)}
-                    className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
-                      community.isJoined
-                        ? 'bg-[var(--ink)] text-white'
-                        : 'bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-deep)]'
+                    key={mode}
+                    onClick={() => setSortMode(mode)}
+                    className={`rounded-full px-3 py-2 text-xs font-bold ${
+                      sortMode === mode ? 'bg-[var(--ink)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)]'
                     }`}
                   >
-                    {community.isJoined ? '가입됨' : '가입'}
+                    {mode}
                   </button>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-[var(--muted)]">{community.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </aside>
-
-      <section className="space-y-5">
-        <section className="panel overflow-hidden rounded-[32px]">
-          <div
-            className="relative h-56 bg-cover bg-center"
-            style={{ backgroundImage: `url(${activeCommunity?.banner ?? featuredPost?.image ?? ''})` }}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.18)_0%,rgba(17,24,39,0.78)_100%)]" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/75">
-                {activeCommunity ? 'Community View' : 'Home Feed'}
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold">
-                {activeCommunity ? activeCommunity.slug : '당신을 위한 커뮤니티 피드'}
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/82">
-                {activeCommunity
-                  ? activeCommunity.description
-                  : '메인 화면에서는 추천 커뮤니티와 추천 피드를 먼저 보여줍니다. 커뮤니티에 들어가면 그 안에서만 글을 작성하고 스레드를 탐색할 수 있어요.'}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(activeCommunity?.tags ?? ['홈', '트렌딩', '커뮤니티']).map((tag) => (
-                  <span key={tag} className="rounded-full border border-white/16 bg-white/10 px-3 py-2 text-xs font-semibold">
-                    #{tag}
-                  </span>
                 ))}
               </div>
             </div>
-          </div>
-        </section>
 
-        {!activeCommunity ? (
-          <>
-            <section className="panel rounded-[30px] p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mt-4 flex flex-wrap gap-2">
+              {filters.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setActiveFilter(item)}
+                  className={`rounded-full px-3 py-2 text-xs font-semibold ${
+                    activeFilter === item ? 'bg-[var(--brand-orange)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)]'
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {!activeCommunity && (
+            <section className="reddit-panel rounded-[24px] p-4">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold">추천 커뮤니티</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">메인에서 먼저 둘러볼 만한 보드를 보여줍니다.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {recommendedCommunities.slice(0, 3).map((community) => (
-                    <button
-                      key={community.id}
-                      onClick={() => setActiveCommunityId(community.id)}
-                      className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-xs font-semibold text-[var(--muted)] transition hover:bg-[rgba(255,106,50,0.12)] hover:text-[var(--ink)]"
-                    >
-                      {community.slug}
-                    </button>
-                  ))}
+                  <p className="text-sm font-bold text-[var(--ink)]">추천 커뮤니티</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">오른쪽 랭킹 박스와 별개로 메인 상단에 추천 보드를 노출합니다.</p>
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-2">
                 {recommendedCommunities.map((community) => (
                   <button
                     key={community.id}
                     onClick={() => setActiveCommunityId(community.id)}
-                    className="overflow-hidden rounded-[26px] border border-[rgba(33,35,38,0.08)] bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(31,41,55,0.08)]"
+                    className="flex items-center gap-3 rounded-[18px] border border-[var(--line)] bg-white p-3 text-left transition hover:border-[rgba(255,106,50,0.32)] hover:bg-[rgba(255,106,50,0.03)]"
                   >
                     <div
-                      className="h-28 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${community.banner})` }}
+                      className="h-14 w-14 rounded-[16px] bg-cover bg-center"
+                      style={{ backgroundImage: `url(${community.icon || community.banner})` }}
                     />
-                    <div className="p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-base font-semibold">{community.slug}</p>
-                        <span className="rounded-full bg-[rgba(255,106,50,0.12)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-orange-deep)]">
-                          {community.isJoined ? 'Joined' : 'Recommended'}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{community.description}</p>
-                      <div className="mt-3 flex items-center justify-between text-xs text-[var(--muted)]">
-                        <span>{formatCompactNumber(community.members)} members</span>
-                        <span>{community.online} online</span>
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-[var(--ink)]">{community.slug}</p>
+                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--muted)]">{community.description}</p>
                     </div>
+                    <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-1 text-[10px] font-bold text-[var(--muted)]">
+                      {community.isJoined ? 'Joined' : 'View'}
+                    </span>
                   </button>
                 ))}
               </div>
             </section>
+          )}
 
-            <section className="panel rounded-[30px] p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold">추천 피드</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    {joinedOnlyHome ? '가입한 커뮤니티와 추천 보드 중심' : '전체 보드 기준'}으로 정렬된 스레드입니다.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex flex-wrap gap-2">
-                    {sortModes.map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setSortMode(mode)}
-                        className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
-                          sortMode === mode
-                            ? 'bg-[var(--ink)] text-white'
-                            : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[rgba(32,34,37,0.08)]'
-                        }`}
-                      >
-                        {mode}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {filters.map((item) => (
-                      <button
-                        key={item}
-                        onClick={() => setActiveFilter(item)}
-                        className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
-                          activeFilter === item
-                            ? 'bg-[var(--brand-orange)] text-white'
-                            : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[rgba(32,34,37,0.08)]'
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <section className="space-y-3">
+            {filteredPosts.length === 0 ? (
+              <div className="reddit-panel rounded-[24px] p-8 text-center text-sm text-[var(--muted)]">
+                이 조건에 맞는 글이 없습니다. 다른 커뮤니티를 보거나 필터를 바꿔보세요.
               </div>
-            </section>
-          </>
-        ) : (
-          <section className="panel rounded-[30px] p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold">커뮤니티 피드</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">{`${activeCommunity.slug}에 올라온 글 ${activeCommunityPostCount}개`}</p>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <div className="flex flex-wrap gap-2">
-                  {sortModes.map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setSortMode(mode)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
-                        sortMode === mode
-                          ? 'bg-[var(--ink)] text-white'
-                          : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[rgba(32,34,37,0.08)]'
-                      }`}
-                    >
-                      {mode}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {filters.map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => setActiveFilter(item)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
-                        activeFilter === item
-                          ? 'bg-[var(--brand-orange)] text-white'
-                          : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[rgba(32,34,37,0.08)]'
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            ) : (
+              filteredPosts.map((post) => (
+                <Post
+                  key={post.id}
+                  post={post}
+                  onLike={onLike}
+                  onSave={onSave}
+                  onShare={onShare}
+                  onDelete={onDelete}
+                  onComment={onComment}
+                />
+              ))
+            )}
           </section>
-        )}
+        </main>
 
-        {filteredPosts.length === 0 ? (
-          <div className="panel rounded-[30px] p-8 text-center text-[var(--muted)]">
-            아직 이 영역에는 글이 없습니다. 새 게시글을 올리거나 다른 커뮤니티 피드로 이동해보세요.
-          </div>
-        ) : (
-          filteredPosts.map((post) => (
-            <Post
-              key={post.id}
-              post={post}
-              onLike={onLike}
-              onSave={onSave}
-              onShare={onShare}
-              onDelete={onDelete}
-              onComment={onComment}
-            />
-          ))
-        )}
-      </section>
+        <aside className="space-y-4">
+          <section className="reddit-panel rounded-[24px] p-4">
+            <p className="text-sm font-bold text-[var(--ink)]">
+              {activeCommunity ? `${activeCommunity.slug} 정보` : 'Popular Communities'}
+            </p>
 
-      <aside className="space-y-5">
-        {activeCommunity && (
-          <section className="panel rounded-[32px] p-5">
-            <p className="text-sm font-semibold">{activeCommunity.slug} 정보</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-[20px] bg-[var(--surface-muted)] px-4 py-4">
-                <p className="text-lg font-semibold">{formatCompactNumber(activeCommunity.members)}</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">멤버</p>
+            {activeCommunity ? (
+              <div className="mt-4">
+                <div
+                  className="h-28 rounded-[18px] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${activeCommunity.banner})` }}
+                />
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                    <p className="text-lg font-bold">{formatCompactNumber(activeCommunity.members)}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Members</p>
+                  </div>
+                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                    <p className="text-lg font-bold">{activeCommunity.online}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Online</p>
+                  </div>
+                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                    <p className="text-lg font-bold">{activeCommunityPostCount}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Threads</p>
+                  </div>
+                  <div className="rounded-[16px] bg-[var(--surface-muted)] px-3 py-4">
+                    <p className="text-lg font-bold">{activeCommunityTotalComments}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Comments</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(activeCommunityTopTags.length ? activeCommunityTopTags : activeCommunity.tags).map((tag) => (
+                    <span key={tag} className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-xs font-semibold text-[var(--muted)]">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => onJoinCommunity(activeCommunity.id)}
+                  className={`mt-4 w-full rounded-full px-4 py-3 text-sm font-bold ${
+                    activeCommunity.isJoined ? 'bg-[var(--ink)] text-white' : 'bg-[var(--brand-orange)] text-white'
+                  }`}
+                >
+                  {activeCommunity.isJoined ? '가입 해제' : '이 커뮤니티 가입'}
+                </button>
               </div>
-              <div className="rounded-[20px] bg-[var(--surface-muted)] px-4 py-4">
-                <p className="text-lg font-semibold">{activeCommunity.online}</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">접속 중</p>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-[20px] bg-[var(--surface-muted)] px-4 py-4">
-                <p className="text-lg font-semibold">{activeCommunityPostCount}</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">스레드</p>
-              </div>
-              <div className="rounded-[20px] bg-[var(--surface-muted)] px-4 py-4">
-                <p className="text-lg font-semibold">{activeCommunityTotalComments}</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">댓글</p>
-              </div>
-            </div>
-            <div className="mt-4 rounded-[22px] bg-[var(--surface-muted)] p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--brand-orange-deep)]">About</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{activeCommunity.description}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(activeCommunityTopTags.length ? activeCommunityTopTags : activeCommunity.tags).map((tag) => (
-                  <span key={tag} className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)]">
-                    #{tag}
-                  </span>
+            ) : (
+              <div className="mt-4 space-y-2">
+                {recommendedCommunities.slice(0, 5).map((community, index) => (
+                  <div key={community.id} className="flex items-center gap-3 rounded-[16px] bg-[var(--surface-muted)] px-3 py-3">
+                    <span className="w-5 text-center text-xs font-bold text-[var(--muted)]">{index + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <button
+                        onClick={() => setActiveCommunityId(community.id)}
+                        className="truncate text-left text-sm font-bold text-[var(--ink)]"
+                      >
+                        {community.slug}
+                      </button>
+                      <p className="mt-1 text-xs text-[var(--muted)]">{formatCompactNumber(community.members)} members</p>
+                    </div>
+                    <button
+                      onClick={() => onJoinCommunity(community.id)}
+                      className={`rounded-full px-3 py-2 text-xs font-bold ${
+                        community.isJoined ? 'bg-white text-[var(--ink)]' : 'bg-[var(--brand-orange)] text-white'
+                      }`}
+                    >
+                      {community.isJoined ? 'Joined' : 'Join'}
+                    </button>
+                  </div>
                 ))}
               </div>
-            </div>
-            <button
-              onClick={() => onJoinCommunity(activeCommunity.id)}
-              className={`mt-4 w-full rounded-full px-4 py-3 text-sm font-semibold transition ${
-                activeCommunity.isJoined
-                  ? 'bg-[var(--ink)] text-white'
-                  : 'bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-deep)]'
-              }`}
-            >
-              {activeCommunity.isJoined ? '가입 해제' : '이 커뮤니티 가입'}
-            </button>
+            )}
           </section>
-        )}
 
-        {!activeCommunity && (
-          <section className="panel rounded-[32px] p-5">
-            <p className="text-sm font-semibold">추천 포인트</p>
-            <div className="mt-4 space-y-3">
-              <div className="rounded-[22px] bg-[var(--surface-muted)] p-4">
-                <p className="text-sm font-semibold">커뮤니티부터 탐색</p>
-                <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-                  메인에서는 글 작성 대신 어떤 커뮤니티에 들어갈지 먼저 선택하는 구조로 바꿨습니다.
-                </p>
+          {!activeCommunity && (
+            <section className="reddit-panel rounded-[24px] p-4">
+              <p className="text-sm font-bold text-[var(--ink)]">Trending Today</p>
+              <div className="mt-4 space-y-3">
+                {trendingPosts.map((post) => (
+                  <button
+                    key={post.id}
+                    onClick={() => setActiveCommunityId(post.communityId || 'home')}
+                    className="block w-full rounded-[16px] bg-[var(--surface-muted)] p-3 text-left"
+                  >
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--brand-orange-deep)]">
+                      {post.communitySlug || 'Home Feed'}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm font-bold text-[var(--ink)]">{post.content}</p>
+                    <p className="mt-2 text-xs text-[var(--muted)]">
+                      업보트 {post.likes} · 댓글 {post.comments.length}
+                    </p>
+                  </button>
+                ))}
               </div>
-              <div className="rounded-[22px] bg-[var(--surface-muted)] p-4">
-                <p className="text-sm font-semibold">커뮤니티 안에서만 작성</p>
-                <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-                  글 쓰기는 보드 안에서 하단 고정 `+` 버튼을 눌러 팝업으로 여는 흐름입니다.
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-      </aside>
+            </section>
+          )}
+        </aside>
+      </div>
 
       {activeCommunity && (
         <button
-          onClick={handleOpenComposer}
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-orange)] text-3xl leading-none text-white shadow-[0_18px_40px_rgba(255,106,50,0.35)] transition hover:scale-[1.03] hover:bg-[var(--brand-orange-deep)] sm:bottom-8 sm:right-8"
+          onClick={() => setIsComposerOpen(true)}
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-orange)] text-3xl font-light text-white shadow-[0_18px_40px_rgba(255,106,50,0.35)]"
           aria-label="새 글 작성"
         >
           +
@@ -600,12 +513,13 @@ const Feed: React.FC<FeedProps> = ({
       )}
 
       {activeCommunity && isComposerOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(17,24,39,0.48)] p-4 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[32px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(15,23,42,0.52)] p-4 sm:items-center">
+          <button className="absolute inset-0" onClick={() => setIsComposerOpen(false)} aria-label="팝업 닫기" />
+          <div className="relative z-10 w-full max-w-4xl">
             <div className="mb-3 flex justify-end">
               <button
-                onClick={handleCloseComposer}
-                className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-[var(--ink)] shadow-[0_10px_24px_rgba(17,24,39,0.12)]"
+                onClick={() => setIsComposerOpen(false)}
+                className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[var(--ink)]"
               >
                 닫기
               </button>
@@ -615,10 +529,9 @@ const Feed: React.FC<FeedProps> = ({
               user={user}
               communities={communities}
               activeCommunityId={activeCommunity.id}
-              onSubmitted={handleCloseComposer}
+              onSubmitted={() => setIsComposerOpen(false)}
             />
           </div>
-          <button className="absolute inset-0 -z-10 cursor-default" onClick={handleCloseComposer} aria-label="팝업 닫기" />
         </div>
       )}
     </div>
